@@ -23,7 +23,7 @@
 
 <body>
 
-<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2022</h1>
 <h1 align="middle">Project 1: Rasterizer</h1>
 <h2 align="middle">Andrew Chang, Norman Karr, CS184-SP22</h2>
 
@@ -37,21 +37,24 @@
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
-<b>Overview:</b><br/>
+<b><u>Overview:</u></b><br/>
+
 In this task, we implemented triangle rasterization by first determining the bounding window of where to sample points, given the vertices of the triangle. We know we only have to
 sample starting from the smallest x, y coordinate point we can create in the set of vertices because that's the smallest x, y coordinate that could be in the triangle, and we know we can stop sampling
 once we reach the largeset x, y coordinate point we can create from the x, y points of the vertices because this would be the largest coordinate that could be in the triangle. This satisfies the requirement
-where our algorithm needs to be no worse than sampling within the bounding box of the triangle, since our algorithm is doing exactly that. Once we determine the bounding box, we iterate through each point 
-within this box while adding 0.5 to each point since we’re sampling from the center of each pixel, and we check if this point x, y coordinate is within our triangle using a checkInside function. The checkInside 
-function first calls the checkCCW function to determine if the set of vertices of the triangle is given in a counterclockwise orientation. The checkCCW function does this by evaluating the cross product of two 
-vectors of the triangle, with the triangle being counterclockwise if the cross product is greater than 0. Once  we determine the orientation, we use the line test written as a lineTest function to evaluate which 
-side the point lies on for all three edges of the triangle. Given that the orientation is counterclockwise, the line test has to return a number greater than or equal to 0 (less than or equal to 0 if clockwise) 
-in order for the point to either be on the edge or inside the specific edge that we’re testing. Once all line tests have been satisfied for each edge, we would know the point is in the triangle and call fill_pixel 
+where our algorithm needs to be no worse than sampling within the bounding box of the triangle, since our algorithm is doing exactly that. Once we determine the bounding box, we iterate through each point
+within this box while adding 0.5 to each point since we’re sampling from the center of each pixel, and we check if this point x, y coordinate is within our triangle using a checkInside function. The checkInside
+function first calls the checkCCW function to determine if the set of vertices of the triangle is given in a counterclockwise orientation. The checkCCW function does this by evaluating the cross product of two
+vectors of the triangle, with the triangle being counterclockwise if the cross product is greater than 0. Once  we determine the orientation, we use the line test written as a lineTest function to evaluate which
+side the point lies on for all three edges of the triangle. Given that the orientation is counterclockwise, the line test has to return a number greater than or equal to 0 (less than or equal to 0 if clockwise)
+in order for the point to either be on the edge or inside the specific edge that we’re testing. Once all line tests have been satisfied for each edge, we would know the point is in the triangle and call fill_pixel
 to color the pixel corresponding to that sample point. This completes our triangle rasterization algorithm.<br/>
-<b>Issues we encountered:</b><br/>
-This task was relatively straight forward, the only minor issue we encountered was accidentally implementing cross product incorrectly, as we had done addition instead of subtraction in the formula. We were able to 
+<br/>
+<b><u>Issues we encountered:</u></b><br/>
+This task was relatively straight forward, the only minor issue we encountered was accidentally implementing cross product incorrectly, as we had done addition instead of subtraction in the formula. We were able to
 quickly resolve this issue through debugging.<br/>
-<b>Results:</b><br/>
+<br/>
+<b><u>Results:</u></b><br/>
 Our triangle rasterization worked well, as we were able to generate the correct images for basic test 3, 4, 5, and 6. Below is an image of basic test 4, with the pixel inspector centered on a part of the scene where
 we can clearly see that our single sample point per pixel rasterization did not work very well as it did not create a fully connected pink triangle. We can fix this with antialiasing, which is implemented in the next
 task.
@@ -68,19 +71,20 @@ task.
 
 
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
-<b>Overview:</b><br/>
-In this section, we implemented antialiasing through supersampling. Supersampling is useful because we’re able to take average out colors, creating a smoother gradient in the boundaries of color which gets rid of 
-jaggies and makes the edges of the images more smooth. To implement supersampling, we needed an intermediate buffer to store our supersamples before we averaged out the colors. Since we’re also sampling from more 
-points per pixel, we also needed to add two for loops (one for x, one for y). The number of iterations for these two for loops per pixel is the square root of the sampling rate provided. Once we calculate the x, y 
-coordinates for each super sample, we simply run the same checkInside algorithm to see if the supersamples are in the triangle, and we store the results in the buffer. We also had to make modifications in our 
-rasterization pipeline, specifically in our set_sample_rate and set_framebuffer_target functions to account for changing the size of our intermediate buffer, and our resolve_to_framebuffer function, where we implemented 
-downsampling. We downsample by retrieving the supersamples that correspond to a pixel, and coloring the pixel with the averaged out colors of the supersamples. Through this supersampling process, we were able to antialias 
+<b><u>Overview:</u></b><br/>
+In this section, we implemented antialiasing through supersampling. Supersampling is useful because we’re able to take average out colors, creating a smoother gradient in the boundaries of color which gets rid of
+jaggies and makes the edges of the images more smooth. To implement supersampling, we needed an intermediate buffer to store our supersamples before we averaged out the colors. Since we’re also sampling from more
+points per pixel, we also needed to add two for loops (one for x, one for y). The number of iterations for these two for loops per pixel is the square root of the sampling rate provided. Once we calculate the x, y
+coordinates for each super sample, we simply run the same checkInside algorithm to see if the supersamples are in the triangle, and we store the results in the buffer. We also had to make modifications in our
+rasterization pipeline, specifically in our set_sample_rate and set_framebuffer_target functions to account for changing the size of our intermediate buffer, and our resolve_to_framebuffer function, where we implemented
+downsampling. We downsample by retrieving the supersamples that correspond to a pixel, and coloring the pixel with the averaged out colors of the supersamples. Through this supersampling process, we were able to antialias
 our triangles as it creates a smoother gradient of colors instead of sharp color boundaries between pixels. <br/>
-<b>Issues we encountered:</b><br/>
-It was a bit difficult to get started on this task because we really had to understand how the rasterization pipeline works and to really delve into the skeleton code. Once we were able to understand what was happening 
-though, the main issue we encountered was properly calculating the right fractional distances between each supersample and some type casting errors. 
 <br/>
-<b>Results:</b><br/>
+<b><u>Issues we encountered:</u></b><br/>
+It was a bit difficult to get started on this task because we really had to understand how the rasterization pipeline works and to really delve into the skeleton code. Once we were able to understand what was happening
+though, the main issue we encountered was properly calculating the right fractional distances between each supersample and some type casting errors.<br/>
+<br/>
+<b><u>Results:</u></b><br/>
 We were able to implement supersampling, as we can clearly see smoother edges as we increased our sample rate in our basic test svgs. Below are pictures that illustrates the effect of supersampling on basic test 4.
 <div align="middle">
   <table style="width=100%">
@@ -105,16 +109,16 @@ We were able to implement supersampling, as we can clearly see smoother edges as
 
 
 <h3 align="middle">Part 3: Transforms</h3>
-<b>Overview:</b><br/>
+<b><u>Overview:</u></b><br/>
 This section was fairly straight forward, we simply implemented the right formula for matrix rotation, translation and scaling that was given in lecture.
 One thing to note was that we had to convert our degrees to radians for the rotation part. We modified our robot to do wii fit trainer's forward smash attack
 from the game Super Smash Bros Ultimate. We did this by adding rotations and translations to the robots legs and changing the color of the robot so that it would
-look like th wii fit trainer.
+look like th wii fit trainer.<br/>
 <br/>
-<b>Issues we encountered:</b><br/>
-No issues!
+<b><u>Issues we encountered:</u></b><br/>
+No issues! <br/>
 <br/>
-<b>Results:</b><br/>
+<b><u>Results:</u></b><br/>
 Below is a picture of our new robot!
 
 <div align="middle">
@@ -136,76 +140,206 @@ Below is a picture of our new robot!
 <h2 align="middle">Section II: Sampling</h2>
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
+<b><u>Overview:</u></b><br/>
+Drawing singularly colored triangles is fairly uninspiring so we want a method to be a bit more expressive with out triangles. Our goal will be to
+specify the colors of each of the three vertices in the triangle and interpolate the triangle's interior. To achieve this increased expressiveness, we will
+interpolate by using barycentric coordinates. Barycentric coordinates decompose a point inside of a triangle into a ratio of distances, (&alpha;, &beta; &gamma;)
+between the point and all three vertices. We also enforce that the sum of all three ratios should equal 1. For example, a point at the relative center of the
+triangle (equidistant from each vertex) would be decomposed to (1/3, 1/3, 1/3) in barycentric coordinates. Pictured below on the left is the formula for calculating
+(&alpha;, &beta; &gamma;) based on a triangle's given vertices.
 
+<br/>
 <div align="middle">
   <table style="width=100%">
     <tr>
+      <td>
+        <img src="images/barycentric_coords.png" align="middle" width="400px"/>
+        <figcaption align="middle">Barycentric Coordinates Formula</figcaption>
+      </td>
       <td>
         <img src="images/task4_1.png" align="middle" width="400px"/>
         <figcaption align="middle">Triangle with RGB vertices</figcaption>
       </td>
-      <td>
-        <img src="./images/task4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Basic test 7</figcaption>
-      </td>
     </tr>
   </table>
+</div>
+
+Once we have (&alpha;, &beta; &gamma;), we can interpolate the colors by calculating the corresponding linear combinations of the three colors. Our interpolated color
+will be: Color<sub>interp</sub> = &alpha;*Color<sub>A</sub> + &beta;*Color<sub>B</sub> + &gamma;*Color<sub>C</sub>. Pictured above on the right is an example triangle
+with the vertices specified as red, green, and blue and then the interior is interpolated purely based off of barycentric coordinate calculations.
+<br/><br/>
+<b><u>Issues we encountered:</u></b><br/>
+As the code for this part was mostly just implementing given mathematical equations. There were not any large issues. The only issues incurred were swapping some
+variables within the calculation.<br/>
+<br/>
+<b><u>Results:</u></b><br/>
+Below is our result for basic test 7:
+
+<br/>
+<div align="middle">
+  <img src="./images/task4.png" align="middle" width="400px"/>
+  <figcaption align="middle">Basic Test 7</figcaption>
+</div>
+<br/>
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+<b><u>Overview:</u></b><br/>
 
+Another way of filling in a triangle is a method known was texture mapping. At a high level, we do this by defining corresponding triangles within our screen and
+a texture image and then filling in our screen triangles with the corresponding texture. To actually fill in each pixel of the triangle, we use a method known as
+pixel sampling. In pixel mapping, for each pixel in the screen's triangle, we find its corresponding coordinate in the texture image. The corresponding coordinates
+are found by using the defined vertex correspondences and applying barycentric coordinates idea to the points' coordinates instead of color.
+<br/><br/>
+The next issue we have to solve is what happens when one of the corresponding texture coordinates is not a perfect integer (i.e. not a defined point of the texture).
+We apply two solutions to this: nearest neighbor sampling and bilinear sampling. Nearest neighbor sampling just means that we assign the target pixel the value of
+the nearest defined pixel in the texture image. Bilinear sampling means we take a linear combination of the four texture image points around our target pixel.
+Pictured below are the equations we use to solve for the bilinear sample.
+
+<br/>
+<div align="middle">
+  <img src="./images/lerp.png" align="middle" width="400px"/>
+  <figcaption align="middle">Bilinear Interpolation</figcaption>
+</div>
+<br/>
+
+<br/>
+<b><u>Issues we encountered:</u></b><br/>
+This portion of the code was where we had the most trouble. At first, we did not realize that the corresponding uv coordinates were relative coordinates (i.e.
+ranging from 0 to 1) but this problem was solved pretty quickly. The primary issue that took the most time was a misinterpretation of the texture mapping algorithm.
+What we were doing at first was sampling the texture at each vertex of the triangles only and then interpolating the interior as we had done in part 4. This resulted
+in overly blurry images. We were stuck on this for a long time because we thought the issue was due to some coordinate mapping issue or some form of aliasing. However,
+as soon as we realized that we were supposed to texture map the entirety of the triangle, we solved the issue quickly.
+<br/>
+<br/>
+<b><u>Results:</u></b><br/>
+
+Pictured below are the results of different combinations of sampling methods and sample rates. Without any supersampling, it is clear that nearest neighbor produces
+less smooth pixel patterns than with bilinear sampling. For example, in the two images pictured directly below, bilinear sampling produces a much smoother "8" in the
+rasterized image. However, once we add in supersampling, differences between nearest neighbor and bilinear sampling are not nearly as apparent. The antialiasing at
+a sample rate of 16 is enough to virtually negate aliasing caused by nearest sampling.
+<br/>
+<br/>
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/task5_1.png" align="middle" width="400px"/>
-        <figcaption align="middle">Nearest sampling on parrot's eye</figcaption>
+        <img src="images/berk_nearest_s1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest Sample; sample rate of 1</figcaption>
       </td>
       <td>
-        <img src="./images/task5_2.png" align="middle" width="400px"/>
-        <figcaption align="middle">Bilinear sampling on parrot's eye</figcaption>
+        <img src="images/berk_linear_s1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear Sample; sample rate of 1</figcaption>
       </td>
     </tr>
   </table>
 </div>
 
+<br/>
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/task5_4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Nearest sampling with sampling rate of 1</figcaption>
+        <img src="images/berk_nearest_s16.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest Sample; sample rate of 16</figcaption>
       </td>
       <td>
-        <img src="./images/task5_6.png" align="middle" width="400px"/>
-        <figcaption align="middle">Bilinear sampling with sampling rate of 1</figcaption>
-      </td>
-    </tr>
-  </table>
-</div>
-
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/task5_5.png" align="middle" width="400px"/>
-        <figcaption align="middle">Nearest sampling with sampling rate of 16</figcaption>
-      </td>
-      <td>
-        <img src="./images/task5_3.png" align="middle" width="400px"/>
-        <figcaption align="middle">Bilinear sampling with sampling rate of 16</figcaption>
+        <img src="images/berk_linear_s16.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear Sample; sample rate of 16</figcaption>
       </td>
     </tr>
   </table>
 </div>
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+<b><u>Overview:</u></b><br/>
+As what seems to be an issue with everything in computer graphics, naive texture mapping is also vulnerable to aliasing effects. Aliasing can occur when a small screen
+triangle maps to a large area in the texture image. When this happens, supersampling may not even be enough to compensate. To alleviate this problem, we apply a method
+know as mipmaps. Mipmaps store multiple resolution levels of the texture image. The lowest level mipmap is the original, full resolution, texture image, the next level
+contains an antialiased half-resolution texture image, the next level contains an antialiased quarter-resolution texture image, and so on. Maintaining this trend, we
+are able to store all mipmaps with only an additional third of memory relative to the original texture image.
+<br/><br/>
+With the mipmap, there is a new problem to solve: how to know which level to sample from? To do this, we estimate the footprint of screen pixels in texture space. From
+this footprint, we calculate the optimum level. Our choice level, D, is calculated using the equations pictured below:
+<br/>
+<br/>
+<div align="middle">
+  <img src="./images/mipmap.png" align="middle" width="500px"/>
+</div>
+<br/>
 
+However, this calculated D is not gauranteed to be an integer leaving it ambiguous on which level to sample from. Two possible sampling methods are to just sample directly
+from the nearest level to D or to linearly interpolate between the level above and the level below D.
+<br/><br/>
 
+<b><u>Issues we encountered:</u></b><br/>
+The main issue we encountered when adding in mipmap functionality was calculating resultant levels that weren't valid. To solve this, we simply clipped the values of D
+to be in between 0 and the maximum level.
+<br/><br/>
+<b><u>Result:</u></b><br/>
 
-<h2 align="middle">Section III: Art Competition</h2>
-<p>If you are not participating in the optional art competition, don't worry about this section!</p>
+Pictured below are results for various combinations of mipmap and pixel sampling parameters:
+<br/><br/>
 
-<h3 align="middle">Part 7: Draw something interesting!</h3>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/l0_pnear.png" align="middle" width="400px"/>
+        <figcaption align="middle">Level 0 and Nearest Pixel Sample</figcaption>
+      </td>
+      <td>
+        <img src="images/l0_plinear.png" align="middle" width="400px"/>
+        <figcaption align="middle">Level 0 and Bilinear Pixel Sample</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br/>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/lnear_pnear.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest Level and Nearest Pixel Sample</figcaption>
+      </td>
+      <td>
+        <img src="images/lnear_plinear.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest Level and Bilinear Pixel Sample</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<br/>
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/llinear_pnear.png" align="middle" width="400px"/>
+        <figcaption align="middle">Linear Level and Nearest Pixel Sample</figcaption>
+      </td>
+      <td>
+        <img src="images/llinear_plinear.png" align="middle" width="400px"/>
+        <figcaption align="middle">Linear Level and Bilinear Pixel Sample</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+<br/>
+<br/>
+<b><u>Analysis and Tradeoffs:</u></b><br/>
+In all the examples shown, it is visually difficult to tell the difference between all the images. This is largely because there is not much aliasing happening in
+the level 0 image. As a result, using mipmaps does not change much. However, there are tradeoffs between each method combination. In regards to mipmap levesl: using
+level zero only is the most memory efficient but has the least antialiasing power. Nearest and linear level sampling require more memory but have significant
+antialiasing power. The runtime differences between them is not huge as the level calculations add a constant amount of calculations per triangle. In regards to
+pixel sampling, the nearest sample is faster than bilinear sampling but provides no additional antialiasing power unlike bilinear sampling.
+
+<br/><br/>
+<h2 align="middle">Conclusion</h2>
+
+Overall, this was a very rewarding project, we learned a lot in this project about the process of rasterization and drawing with triangles. We were able to learn
+and implement a variety of techniques and calcuations that enable efficient and antialiased graphics generation. 
 
 </body>
 </html>
