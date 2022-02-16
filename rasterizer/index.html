@@ -25,7 +25,7 @@
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
 <h1 align="middle">Project 1: Rasterizer</h1>
-<h2 align="middle">YOUR NAME, CS184-??</h2>
+<h2 align="middle">Andrew Chang, Norman Karr, CS184-SP22</h2>
 
 <br><br>
 
@@ -37,30 +37,30 @@
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
-
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
-
+<b>Overview:</b><br/>
+In this task, we implemented triangle rasterization by first determining the bounding window of where to sample points, given the vertices of the triangle. We know we only have to
+sample starting from the smallest x, y coordinate point we can create in the set of vertices because that's the smallest x, y coordinate that could be in the triangle, and we know we can stop sampling
+once we reach the largeset x, y coordinate point we can create from the x, y points of the vertices because this would be the largest coordinate that could be in the triangle. This satisfies the requirement
+where our algorithm needs to be no worse than sampling within the bounding box of the triangle, since our algorithm is doing exactly that. Once we determine the bounding box, we iterate through each point 
+within this box while adding 0.5 to each point since we’re sampling from the center of each pixel, and we check if this point x, y coordinate is within our triangle using a checkInside function. The checkInside 
+function first calls the checkCCW function to determine if the set of vertices of the triangle is given in a counterclockwise orientation. The checkCCW function does this by evaluating the cross product of two 
+vectors of the triangle, with the triangle being counterclockwise if the cross product is greater than 0. Once  we determine the orientation, we use the line test written as a lineTest function to evaluate which 
+side the point lies on for all three edges of the triangle. Given that the orientation is counterclockwise, the line test has to return a number greater than or equal to 0 (less than or equal to 0 if clockwise) 
+in order for the point to either be on the edge or inside the specific edge that we’re testing. Once all line tests have been satisfied for each edge, we would know the point is in the triangle and call fill_pixel 
+to color the pixel corresponding to that sample point. This completes our triangle rasterization algorithm.<br/>
+<b>Issues we encountered:</b><br/>
+This task was relatively straight forward, the only minor issue we encountered was accidentally implementing cross product incorrectly, as we had done addition instead of subtraction in the formula. We were able to 
+quickly resolve this issue through debugging.<br/>
+<b>Results:</b><br/>
+Our triangle rasterization worked well, as we were able to generate the correct images for basic test 3, 4, 5, and 6. Below is an image of basic test 4, with the pixel inspector centered on a part of the scene where
+we can clearly see that our single sample point per pixel rasterization did not work very well as it did not create a fully connected pink triangle. We can fix this with antialiasing, which is implemented in the next
+task.
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/image1.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-      <td>
-        <img src="images/image2.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-    </tr>
-    <br>
-    <tr>
-      <td>
-        <img src="images/image3.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-      <td>
-        <img src="images/image4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
+        <img src="images/task1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Zoomed in on aliasing of pink triangle.</figcaption>
       </td>
     </tr>
   </table>
@@ -68,20 +68,135 @@
 
 
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
-
+<b>Overview:</b><br/>
+In this section, we implemented antialiasing through supersampling. Supersampling is useful because we’re able to take average out colors, creating a smoother gradient in the boundaries of color which gets rid of 
+jaggies and makes the edges of the images more smooth. To implement supersampling, we needed an intermediate buffer to store our supersamples before we averaged out the colors. Since we’re also sampling from more 
+points per pixel, we also needed to add two for loops (one for x, one for y). The number of iterations for these two for loops per pixel is the square root of the sampling rate provided. Once we calculate the x, y 
+coordinates for each super sample, we simply run the same checkInside algorithm to see if the supersamples are in the triangle, and we store the results in the buffer. We also had to make modifications in our 
+rasterization pipeline, specifically in our set_sample_rate and set_framebuffer_target functions to account for changing the size of our intermediate buffer, and our resolve_to_framebuffer function, where we implemented 
+downsampling. We downsample by retrieving the supersamples that correspond to a pixel, and coloring the pixel with the averaged out colors of the supersamples. Through this supersampling process, we were able to antialias 
+our triangles as it creates a smoother gradient of colors instead of sharp color boundaries between pixels. <br/>
+<b>Issues we encountered:</b><br/>
+It was a bit difficult to get started on this task because we really had to understand how the rasterization pipeline works and to really delve into the skeleton code. Once we were able to understand what was happening 
+though, the main issue we encountered was properly calculating the right fractional distances between each supersample and some type casting errors. 
+<br/>
+<b>Results:</b><br/>
+We were able to implement supersampling, as we can clearly see smoother edges as we increased our sample rate in our basic test svgs. Below are pictures that illustrates the effect of supersampling on basic test 4.
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="./images/task1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Rasterization with a sample rate of 1</figcaption>
+      </td>
+      <td>
+        <img src="./images/task2_4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Rasterization with a sample rate of 4</figcaption>
+      </td>
+    <br>
+      <tr>
+      <td>
+        <img src="./images/task2_16.png" align="middle" width="400px"/>
+        <figcaption align="middle">Rasterization with a sample rate of 16</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 
 <h3 align="middle">Part 3: Transforms</h3>
+<b>Overview:</b><br/>
+This section was fairly straight forward, we simply implemented the right formula for matrix rotation, translation and scaling that was given in lecture.
+One thing to note was that we had to convert our degrees to radians for the rotation part. We modified our robot to do wii fit trainer's forward smash attack
+from the game Super Smash Bros Ultimate. We did this by adding rotations and translations to the robots legs and changing the color of the robot so that it would
+look like th wii fit trainer.
+<br/>
+<b>Issues we encountered:</b><br/>
+No issues!
+<br/>
+<b>Results:</b><br/>
+Below is a picture of our new robot!
 
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task3.png" align="middle" width="400px"/>
+        <figcaption align="middle">Our robot doing the wii fit trainer pose.</figcaption>
+      </td>
+      <td>
+        <img src="./images/task3_2.png" align="middle" width="400px"/>
+        <figcaption align="middle">Where we got our inspiration from</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 
 <h2 align="middle">Section II: Sampling</h2>
 
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
 
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task4_1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Triangle with RGB vertices</figcaption>
+      </td>
+      <td>
+        <img src="./images/task4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Basic test 7</figcaption>
+      </td>
+    </tr>
+  </table>
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
 
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task5_1.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest sampling on parrot's eye</figcaption>
+      </td>
+      <td>
+        <img src="./images/task5_2.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear sampling on parrot's eye</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task5_4.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest sampling with sampling rate of 1</figcaption>
+      </td>
+      <td>
+        <img src="./images/task5_6.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear sampling with sampling rate of 1</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/task5_5.png" align="middle" width="400px"/>
+        <figcaption align="middle">Nearest sampling with sampling rate of 16</figcaption>
+      </td>
+      <td>
+        <img src="./images/task5_3.png" align="middle" width="400px"/>
+        <figcaption align="middle">Bilinear sampling with sampling rate of 16</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
 
